@@ -1,40 +1,34 @@
-package com.example.addon.modules;
+package com.example.addon;
 
-import com.example.addon.Addon;
-import net.minecraft.item.Items;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.Direction;
-import meteordevelopment.orbit.EventHandler;
-import meteordevelopment.meteorclient.events.world.TickEvent;
-import meteordevelopment.meteorclient.systems.modules.Module;
-import meteordevelopment.meteorclient.utils.player.FindItemResult;
-import meteordevelopment.meteorclient.utils.player.InvUtils;
+import com.example.addon.modules.CartPvPModule;
+import com.mojang.logging.LogUtils;
+import meteordevelopment.meteorclient.addons.MeteorAddon;
+import meteordevelopment.meteorclient.systems.modules.Category;
+import meteordevelopment.meteorclient.systems.modules.Modules;
+import org.slf4j.Logger;
 
-public class CartPvPModule extends Module {
+public class AddonTemplate extends MeteorAddon {
+    public static final Logger LOG = LogUtils.getLogger();
+    public static final Category CATEGORY = new Category("Cart PvP");
 
-    private boolean wasShooting = false;
+    @Override
+    public void onInitialize() {
+        LOG.info("Initializing Cart PvP Addon");
 
-    public CartPvPModule() {
-        super(Addon.CATEGORY, "cart-pvp", "Automates Cart PvP actions for bow and crossbow.");
+        // Registra o nosso módulo dentro do Meteor Client
+        Modules.get().add(new CartPvPModule());
     }
 
-    @EventHandler
-    private void onTick(TickEvent.Post event) {
-        if (mc.player == null || mc.world == null) return;
-
-        handleCrossbowCart();
-        handleInstaCart();
+    @Override
+    public void onRegisterCategories() {
+        Modules.registerCategory(CATEGORY);
     }
 
-    private void handleCrossbowCart() {
-        if (mc.player.getMainHandStack().isOf(Items.RAIL)) {
-            HitResult hit = mc.crosshairTarget;
-            if (hit != null && hit.getType() == HitResult.Type.BLOCK) {
-                BlockHitResult blockHit = (BlockHitResult) hit;
-                if (blockHit.getSide() == Direction.UP) {
-                    executeCrossbowCart();
+    @Override
+    public String getPackage() {
+        return "com.example.addon";
+    }
+}                    executeCrossbowCart();
                 }
             }
         }
