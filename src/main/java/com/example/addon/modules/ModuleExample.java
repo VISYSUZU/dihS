@@ -1,40 +1,98 @@
 package com.example.addon.modules;
 
-import com.example.addon.AddonTemplate;
-import meteordevelopment.meteorclient.events.render.Render3DEvent;
-import meteordevelopment.meteorclient.renderer.ShapeMode;
-import meteordevelopment.meteorclient.settings.ColorSetting;
-import meteordevelopment.meteorclient.settings.DoubleSetting;
-import meteordevelopment.meteorclient.settings.Setting;
-import meteordevelopment.meteorclient.settings.SettingGroup;
-import meteordevelopment.meteorclient.systems.modules.Module;
-import meteordevelopment.meteorclient.utils.render.color.Color;
-import meteordevelopment.meteorclient.utils.render.color.SettingColor;
+import com.example.addon.Addon;
+import net.minecraft.item.Items;
+import net.minecraft.util.Hand;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.HitResult;
+import net.minecraft.util.math.Direction;
 import meteordevelopment.orbit.EventHandler;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.phys.AABB;
+import meteordevelopment.meteorclient.events.world.TickEvent;
+import meteordevelopment.meteorclient.systems.modules.Module;
+import meteordevelopment.meteorclient.utils.player.FindItemResult;
+import meteordevelopment.meteorclient.utils.player.InvUtils;
 
-public class ModuleExample extends Module {
-    private final SettingGroup sgGeneral = this.settings.getDefaultGroup();
-    private final SettingGroup sgRender = this.settings.createGroup("Render");
+public class CartPvPModule extends Module {
 
-    /**
-     * Example setting.
-     * The {@code name} parameter should be in kebab-case.
-     * If you want to access the setting from another class, simply make the setting {@code public}, and use
-     * {@link meteordevelopment.meteorclient.systems.modules.Modules#get(Class)} to access the {@link Module} object.
-     */
-    private final Setting<Double> scale = sgGeneral.add(new DoubleSetting.Builder()
-        .name("scale")
-        .description("The size of the marker.")
-        .defaultValue(2.0d)
-        .range(0.5d, 10.0d)
-        .build()
-    );
+    private boolean wasShooting = false;
 
-    private final Setting<SettingColor> color = sgRender.add(new ColorSetting.Builder()
-        .name("color")
-        .description("The color of the marker.")
+    public CartPvPModule() {
+        super(Addon.CATEGORY, "cart-pvp", "Automates Cart PvP actions for bow and crossbow.");
+    }
+
+    @EventHandler
+    private void onTick(TickEvent.Post event) {
+        if (mc.player == null || mc.world == null) return;
+
+        handleCrossbowCart();
+        handleInstaCart();
+    }
+
+    private void handleCrossbowCart() {
+        if (mc.player.getMainHandStack().isOf(Items.RAIL)) {
+            HitResult hit = mc.crosshairTarget;
+            if (hit != null && hit.getType() == HitResult.Type.BLOCK) {
+                BlockHitResult blockHit = (BlockHitResult) hit;
+                if (blockHit.getSide() == Direction.UP) {
+                    executeCrossbowCart();
+                }
+            }
+        }
+    }
+
+    private void handleInstaCart() {
+        boolean isUsingItem = mc.options.useKey.isPressed();
+        boolean holdingBow = mc.player.getMainHandStack().isOf(Items.BOW);
+
+        if (holdingBow && wasShooting && !isUsingItem) {
+            executeInstaCart();
+        }
+
+        wasShooting = holdingBow && isUsingItem;
+    }
+
+    private void executeCrossbowCart() {
+        FindItemResult tntCart = InvUtils.findInHotbar(Items.TNT_MINECART);
+        FindItemResult flint = InvUtils.findInHotbar(Items.FLINT_AND_STEEL);
+        FindItemResult crossbow = InvUtils.findInHotbar(Items.CROSSBOW);
+
+        interactBlock();
+
+        if (tntCart.found()) {
+            InvUtils.swap(tntCart.slot(), false);
+            interactBlock();
+        }
+
+        if (flint.found()) {
+            InvUtils.swap(flint.slot(), false);
+            interactBlock();
+        }
+
+        if (crossbow.found()) {
+            InvUtils.swap(crossbow.slot(), false);
+        }
+    }
+
+    private void executeInstaCart() {
+        FindItemResult rail = InvUtils.findInHotbar(Items.RAIL);
+        FindItemResult tntCart = InvUtils.findInHotbar(Items.TNT_MINECART);
+
+        if (rail.found() && tntCart.found()) {
+            InvUtils.swap(rail.slot(), false);
+            interactBlock();
+            InvUtils.swap(tntCart.slot(), false);
+            interactBlock();
+        }
+    }
+
+    private void interactBlock() {
+        HitResult hit = mc.crosshairTarget;
+        if (hit != null && hit.getType() == HitResult.Type.BLOCK) {
+            BlockHitResult blockHit = (BlockHitResult) hit;
+            mc.interactionManager.interactBlock(mc.player, Hand.MAIN_HAND, blockHit);
+        }
+    }
+}        .description("The color of the marker.")
         .defaultValue(Color.MAGENTA)
         .build()
     );
