@@ -1,17 +1,16 @@
 {
   "schemaVersion": 1,
-  "id": "addon-template",
-  "version": "${version}",
-  "name": "Addon Template",
-  "description": "An addon template for Meteor Client addons.",
+  "id": "cartpvp",
+  "version": "1.0.0",
+  "name": "Cart PvP Addon",
+  "description": "Cart PvP Addon for Meteor Client",
   "authors": [
-    "seasnail"
+    "VISYSUZU"
   ],
-  "contact": {
-    "sources": "https://github.com/MeteorDevelopment/meteor-addon-template"
-  },
+  "contact": {},
+  "license": "CC0-1.0",
   "icon": "assets/template/icon.png",
-  "environment": "client",
+  "environment": "*",
   "entrypoints": {
     "meteor": [
       "com.example.addon.AddonTemplate"
@@ -20,17 +19,9 @@
   "mixins": [
     "addon-template.mixins.json"
   ],
-  "custom": {
-    "meteor-client:color": "225,25,25",
-    "modmenu": {
-      "parent": {
-        "id": "meteor-client"
-      }
-    }
-  },
   "depends": {
-    "java": ">=${jdk_version}",
-    "minecraft": "${minecraft_version}",
-    "meteor-client": "*"
+    "fabricloader": ">=0.15.0",
+    "minecraft": ">=1.21",
+    "java": ">=21"
   }
 }
